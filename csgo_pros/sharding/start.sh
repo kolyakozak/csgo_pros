@@ -7,5 +7,5 @@ sh shard2_start.sh
 cd ../configsvr
 sh configsvr_start.sh
 
-cd ../routerdb
+cd ../router
 sh routerdb_start.sh
