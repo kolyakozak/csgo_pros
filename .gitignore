@@ -127,3 +127,21 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+shard1a/
+shard1b/
+shard1c/
+
+shard2a/
+shard2b/
+shard2c/
+
+configsvr1/
+configsvr2/
+configsvr3/
+
+routerdb/
+
+db1/
+db2/
+db3/

@@ -14,5 +14,5 @@ class MongoPipeLine:
         self.db = get_collection()
 
     def process_item(self, item, spider):
-        self.db.update({ 'id': item['id']}, item, upsert=True)
+        self.db.insert(item)
 

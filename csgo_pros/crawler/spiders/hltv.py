@@ -5,12 +5,19 @@ from scrapy import Selector
 from scrapy.spiders import Spider, Request
 
 import time
+import csv
 
 
 class HltvSpider(Spider):
     name = 'hltv'
     allowed_domains = ['hltv.org']
-    start_urls = ['https://www.hltv.org/stats/players/']
+    start_urls = ['https://www.hltv.org/stats/players']
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if 'start_date' in kwargs.keys() and 'end_date' in kwargs.keys():
+            self.start_urls = [f'https://www.hltv.org/stats/players?startDate={kwargs["start_date"]}&endDate={kwargs["end_date"]}']
+
 
     fields = {
         'player_links': '//td[contains(@class, "playerCol")]/a/@href',
@@ -22,15 +29,11 @@ class HltvSpider(Spider):
         'main_stats': '//div[contains(@class, "summaryStatBreakdownDataValue")]/text()',
         'other_stats': '//div[contains(@class , "col stats-rows standard-box")]/div/span[2]/text()'
     }
-
+    
     def parse(self, response):
         root = Selector(response)
 
-        counter = 0
         for link in root.xpath(self.fields['player_links']).getall():
-            # counter += 1
-            # if counter > 10:
-            #     break
             time.sleep(2)
             yield Request(urljoin(response.url, link), callback=self.parse_player_page)
 
@@ -38,7 +41,15 @@ class HltvSpider(Spider):
         root = Selector(response)
         item = {}
 
-        item['id'] = int(remove_non_digit(response.url))
+        match = re.search(r'([\d]+)\/.+\?startDate=([\d\-]{10})&endDate=([\d\-]{10})', response.url)
+        if match:
+            item['id'] = match.group(1)
+            item['start_date'] = match.group(2)
+            item['end_date'] = match.group(3)
+        else:
+            item['id'] = remove_non_digit(response.url)
+            item['start_date'] = ""
+            item['end_date'] = ""
 
         item['nickname'] = root.xpath(self.fields['nickname']).get()
         item['real_name'] = root.xpath(self.fields['real_name']).get()
